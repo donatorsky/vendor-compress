@@ -1,0 +1,269 @@
+#!/usr/bin/env php
+<?php
+declare(strict_types=1);
+
+gc_disable();
+
+/**
+ * @param string $message
+ */
+function stderrln($message) {
+	fwrite(STDERR, sprintf('%s%s', $message, PHP_EOL));
+}
+
+/**
+ * @param string $message
+ */
+function stdout($message) {
+	fwrite(STDOUT, $message);
+}
+
+/**
+ * @param string $message
+ */
+function stdoutln($message) {
+	fwrite(STDOUT, sprintf('%s%s', $message, PHP_EOL));
+}
+
+// Check PHP version
+if (version_compare('7.1.0', PHP_VERSION, '>')) {
+	stderrln('The minimum supported PHP version is 7.1.0');
+	
+	exit(1);
+}
+
+// Check if Phar class exists
+if (!class_exists('Phar')) {
+	stderrln('Class \\Phar is required for vendor-compress to work.');
+	
+	exit(2);
+}
+
+// Detect vendor path
+// Inspired by sebastianbergmann/phpunit: https://github.com/sebastianbergmann/phpunit/blob/master/phpunit#L30
+foreach ([__DIR__ . '/../../autoload.php', __DIR__ . '/../vendor/autoload.php', __DIR__ . '/vendor/autoload.php'] as $file) {
+	if (is_file($file) && $path = realpath($file)) {
+		define('VENDOR_COMPRESS_COMPOSER_INSTALL', dirname($path) . DIRECTORY_SEPARATOR);
+		
+		break;
+	}
+}
+
+if (!defined('VENDOR_COMPRESS_COMPOSER_INSTALL')) {
+	stderrln(
+		'You need to set up the project dependencies using Composer:' . PHP_EOL . PHP_EOL .
+		'    composer install' . PHP_EOL . PHP_EOL .
+		'You can learn all about Composer on https://getcomposer.org/.' . PHP_EOL
+	);
+	
+	exit(3);
+}
+// / sebastianbergmann/phpunit
+
+define('VENDOR_COMPRESS_COMPOSER_PHAR', dirname(VENDOR_COMPRESS_COMPOSER_INSTALL) . DIRECTORY_SEPARATOR . 'vendor.phar');
+
+// Check if PHAR file can be created
+if (!Phar::canWrite()) {
+	stderrln('The php.ini "phar.readonly" option must be disabled to allow creating PHAR archives.');
+	
+	exit(4);
+}
+
+// Detect supported compression methods
+$knownCompressionMethods = [];
+$supportedCompressionMethods = \array_flip(Phar::getSupportedCompression());
+
+if (defined('Phar::GZ') && isset($supportedCompressionMethods['GZ'])) {
+	$knownCompressionMethods['GZ'] = Phar::GZ;
+}
+
+if (defined('Phar::BZ2') && isset($supportedCompressionMethods['BZIP2'])) {
+	$knownCompressionMethods['BZIP2'] = Phar::BZ2;
+}
+
+// Prepare defaults
+$quietOption = false;
+$overrideOption = false;
+$compressionMethodOption = 'FIRST';
+
+// Read user input
+for ($index = 1; $index < $argc; ++$index) {
+	switch (strtolower($argv[$index])) {
+		case '-q':
+		case '--quiet':
+			$quietOption = true;
+		break;
+		
+		case '-o':
+		case '--override':
+			$overrideOption = true;
+		break;
+		
+		case '-c':
+		case '--compression-method':
+			if (($index + 1) >= $argc) {
+				if (!$quietOption) {
+					fwrite(STDERR, sprintf('%s option is expected to have value.', $argv[$index]));
+				}
+				
+				exit(5);
+			}
+			
+			$compressionMethodOption = strtoupper($argv[++$index]);
+		break;
+		
+		default:
+			if (0 === stripos($argv[$index], '-c')) {
+				$compressionMethodOption = strtoupper(substr($argv[$index], 2));
+				
+				continue 2;
+			}
+			
+			if (0 === stripos($argv[$index], '--compression-method=')) {
+				$compressionMethodOption = strtoupper(substr($argv[$index], 21));
+				
+				continue 2;
+			}
+			
+			if (!$quietOption) {
+				fwrite(STDERR, sprintf('Unknown option: %s.', $argv[$index]));
+			}
+			
+			exit(6);
+		break;
+	}
+}
+
+// Fix user input
+if (empty($knownCompressionMethods) || 'NONE' === $compressionMethodOption) {
+	$compressionMethod = Phar::NONE;
+} elseif ('FIRST' === $compressionMethodOption) {
+	$compressionMethod = \reset($knownCompressionMethods);
+} elseif (!IsSet($knownCompressionMethods[$compressionMethodOption])) {
+	if (!$quietOption) {
+		stderrln(sprintf('Unsupported compression method: %s.', $compressionMethodOption));
+	}
+	
+	exit(7);
+} else {
+	$compressionMethod = $knownCompressionMethods[$compressionMethodOption];
+}
+
+// Remove vendor.phar if exists and it is allowed
+if (is_file(VENDOR_COMPRESS_COMPOSER_PHAR)) {
+	stdoutln('The "vendor.phar" file already exists.');
+	
+	if (!$overrideOption) {
+		if (!$quietOption) {
+			stdoutln('Current vendor.phar was not overridden. Aborting.');
+		}
+		
+		exit(0);
+	}
+	
+	if (!\unlink(VENDOR_COMPRESS_COMPOSER_PHAR)) {
+		if (!$quietOption) {
+			stderrln('Could not delete current vendor.phar.');
+		}
+		
+		exit(8);
+	}
+	
+	stdoutln('Current vendor.phar has been removed.');
+}
+
+/**
+ * @var \Phar|\SplFileInfo[] $phar
+ */
+try {
+	$phar = new Phar(VENDOR_COMPRESS_COMPOSER_PHAR, 0, 'vendor.phar');
+} catch (Throwable $e) {
+	if (!$quietOption) {
+		stderrln('Could not create phar:');
+		stderrln($e);
+	}
+	
+	exit(9);
+}
+
+if (!$quietOption) {
+	stdout('Generating vendor.phar file...');
+}
+
+$phar->startBuffering();
+$phar->buildFromDirectory(VENDOR_COMPRESS_COMPOSER_INSTALL);
+
+if (IsSet($phar['composer/autoload_classmap.php'])) {
+	$phar['composer/autoload_classmap.php'] = \str_replace(
+		'$baseDir = dirname($vendorDir);',
+		"\$baseDir = \\Phar::running(true) . '/.mount';",
+		\file_get_contents(VENDOR_COMPRESS_COMPOSER_INSTALL . 'composer' . DIRECTORY_SEPARATOR . 'autoload_classmap.php')
+	);
+}
+
+if (IsSet($phar['composer/autoload_files.php'])) {
+	$phar['composer/autoload_files.php'] = \str_replace(
+		'$baseDir = dirname($vendorDir);',
+		"\$baseDir = \\Phar::running(true) . '/.mount';",
+		\file_get_contents(VENDOR_COMPRESS_COMPOSER_INSTALL . 'composer' . DIRECTORY_SEPARATOR . 'autoload_files.php')
+	);
+}
+
+if (IsSet($phar['composer/autoload_namespaces.php'])) {
+	$phar['composer/autoload_namespaces.php'] = \str_replace(
+		'$baseDir = dirname($vendorDir);',
+		"\$baseDir = \\Phar::running(true) . '/.mount';",
+		\file_get_contents(VENDOR_COMPRESS_COMPOSER_INSTALL . 'composer' . DIRECTORY_SEPARATOR . 'autoload_namespaces.php')
+	);
+}
+
+if (IsSet($phar['composer/autoload_psr4.php'])) {
+	$phar['composer/autoload_psr4.php'] = \str_replace(
+		'$baseDir = dirname($vendorDir);',
+		"\$baseDir = \\Phar::running(true) . '/.mount';",
+		\file_get_contents(VENDOR_COMPRESS_COMPOSER_INSTALL . 'composer' . DIRECTORY_SEPARATOR . 'autoload_psr4.php')
+	);
+}
+
+if (IsSet($phar['composer/autoload_static.php'])) {
+	$phar['composer/autoload_static.php'] = \preg_replace(
+		'/__DIR__\s*\.\s*\'\/..\/..\'\s*\.\s*/m',
+		'PHAR_RUNNING . ',
+		\str_replace(
+			'namespace Composer\Autoload;',
+			'namespace Composer\Autoload;' . PHP_EOL . PHP_EOL . "define('PHAR_RUNNING', \\Phar::running(true) . '/.mount');",
+			\file_get_contents(VENDOR_COMPRESS_COMPOSER_INSTALL . 'composer' . DIRECTORY_SEPARATOR . 'autoload_static.php')
+		)
+	);
+}
+
+$phar->setStub(<<<'STUB'
+<?php
+declare(strict_types=1);
+
+/**
+ * Generated by vendor-compress.
+ *
+ * @version 1.0.0
+ *
+ * @see https://github.com/donatorsky/vendor-compress
+ */
+
+\Phar::interceptFileFuncs();
+\Phar::mount(\Phar::running(true) . '/.mount/', __DIR__ . DIRECTORY_SEPARATOR);
+
+return require_once 'phar://' . __FILE__ . DIRECTORY_SEPARATOR . 'autoload.php';
+
+__HALT_COMPILER();
+STUB
+);
+
+if (Phar::NONE !== $compressionMethod) {
+	$phar->compressFiles($compressionMethod);
+}
+
+$phar->stopBuffering();
+
+stdoutln(\sprintf(' Done! (%d files were packed).', $phar->count()));
+
+exit(0);
