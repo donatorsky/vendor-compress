@@ -1,0 +1,17 @@
+{
+	"name": "donatorsky/vendor-compress",
+	"description": "Compress vendor directory into one vendor.phar file",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Maciej Kudas",
+			"email": "maciejkudas@gmail.com"
+		}
+	],
+	"require": {
+		"php": ">=7.1"
+	},
+	"bin": [
+		"vendor-compress"
+	]
+}
