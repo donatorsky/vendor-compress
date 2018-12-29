@@ -1,0 +1,27 @@
+<?php
+declare(strict_types=1);
+
+use Donatorsky\VendorCompress\Config;
+use Donatorsky\VendorCompress\FileFilters\BasenameFilter;
+use Donatorsky\VendorCompress\FileFilters\BasenameRegexFilter;
+use Donatorsky\VendorCompress\FileFilters\ExtensionFilter;
+use Donatorsky\VendorCompress\FileFilters\IsDirectoryFilter;
+use Donatorsky\VendorCompress\FileFilters\IsFileFilter;
+use Donatorsky\VendorCompress\FileFilters\VendorPackageFilter;
+use Donatorsky\VendorCompress\FileProcessors\MinifyJsonFileProcessor;
+use Donatorsky\VendorCompress\FileProcessors\StripWhitespacesPhpFileProcessor;
+
+return Config::create()
+	->setFilesCompressionMethod(Phar::NONE)
+	->setArchiveCompressionMethod(Phar::NONE)
+	->setExcluded([
+		new VendorPackageFilter('donatorsky', 'vendor-compress'),
+		new IsDirectoryFilter(new BasenameFilter('docs')),
+		new IsDirectoryFilter(new BasenameFilter('tests')),
+		new IsFileFilter(new BasenameFilter('composer.json')),
+		new IsFileFilter(new BasenameFilter('composer.lock')),
+		new IsFileFilter(new BasenameFilter('.gitignore')),
+		new IsFileFilter(new BasenameRegexFilter('/^(?:README|CHANGELOG|phpunit.*\.xml.*$)/i')),
+	])
+	->addFileProcessor(new MinifyJsonFileProcessor(), new ExtensionFilter('json'))
+	->addFileProcessor(new StripWhitespacesPhpFileProcessor(), new ExtensionFilter('php'));

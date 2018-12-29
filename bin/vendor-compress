@@ -1,0 +1,248 @@
+#!/usr/bin/env php
+<?php
+declare(strict_types=1);
+
+//\gc_disable();
+
+require_once 'constants.php';
+require_once 'functions.php';
+require_once 'Console.php';
+
+// Check PHP version
+if (\version_compare('7.1.0', PHP_VERSION, '>')) {
+	stderrln('The minimum supported PHP version is 7.1.0');
+
+	exit(VENDOR_COMPRESS_ERR_UNSUPPORTED_PHP_VERSION);
+}
+
+// Check if Phar class exists
+if (!\class_exists('Phar')) {
+	stderrln('Class \\Phar is required for vendor-compress to work.');
+
+	exit(VENDOR_COMPRESS_ERR_MISSING_PHAR_CLASS);
+}
+
+// Check if PHAR file can be created
+if (!Phar::canWrite()) {
+	stderrln('The php.ini "phar.readonly" option must be disabled to allow creating PHAR archives.');
+
+	exit(VENDOR_COMPRESS_ERR_CANNOT_WRITE_PHAR_FILES);
+}
+
+// Prepare defaults
+$console = (new Console('vendor-compress', 'Compress vendor directory into one vendor.phar file.'))
+	->addArgument(
+		'path',
+		Console::VALUE_OPTIONAL,
+		'Path to the project or vendor directory from which generate PHAR'
+	)
+	->addOption(
+		'configuration',
+		'c',
+		Console::VALUE_REQUIRED,
+		'Path to configuration file'
+	)
+	->addOption(
+		'memory-limit',
+		null,
+		Console::VALUE_REQUIRED,
+		'Set PHP memory limit for current run'
+	)
+	->addOption(
+		'override',
+		'o',
+		Console::VALUE_BOOLEAN,
+		'Defines to override vendor.phar file if it already exists. Without that, if file exists, the generation will not be performed.',
+		false
+	)
+	->addOption(
+		'help',
+		'h',
+		Console::VALUE_BOOLEAN,
+		'Display this help message',
+		false
+	)
+	->addOption(
+		'quiet',
+		'q',
+		Console::VALUE_BOOLEAN,
+		'Do not output any message',
+		false
+	);
+
+// Read user input
+try {
+	$console->validateInput();
+} catch (Throwable $e) {
+	if (!$console->getOption('quiet')) {
+		stderrln($e->getMessage());
+	}
+
+	exit($e->getCode());
+}
+
+if ($console->getOption('help')) {
+	stdoutln((string) $console);
+
+	exit(VENDOR_COMPRESS_ERR_OK);
+}
+
+// Detect vendor path
+$pathArgument = \realpath($console->getArgument('path') ?? __DIR__);
+
+if (false === $pathArgument) {
+	if (!$console->getOption('quiet')) {
+		stderrln('Provided path "%s" does not exists or is inaccessible.', $console->getArgument('path'));
+	}
+
+	exit(VENDOR_COMPRESS_ERR_INACCESSIBLE_VENDOR_PATH);
+}
+
+// Inspired by sebastianbergmann/phpunit: https://github.com/sebastianbergmann/phpunit/blob/master/phpunit#L30
+foreach ([$pathArgument . '/../../autoload.php', $pathArgument . '/../vendor/autoload.php', $pathArgument . '/vendor/autoload.php'] as $file) {
+	if (\is_file($file) && $path = \realpath($file)) {
+		\define('VENDOR_COMPRESS_COMPOSER_INSTALL', \dirname($path) . DIRECTORY_SEPARATOR);
+
+		break;
+	}
+}
+
+if (!\defined('VENDOR_COMPRESS_COMPOSER_INSTALL')) {
+	stderrln(
+		'You need to set up the project dependencies using Composer:' . PHP_EOL . PHP_EOL .
+		'    composer install' . PHP_EOL . PHP_EOL .
+		'You can learn all about Composer on https://getcomposer.org/.' . PHP_EOL
+	);
+
+	exit(VENDOR_COMPRESS_ERR_PROJECT_NOT_SET_UP);
+}
+
+\define('VENDOR_COMPRESS_COMPOSER_PHAR', \dirname(VENDOR_COMPRESS_COMPOSER_INSTALL) . DIRECTORY_SEPARATOR . 'vendor.phar');
+
+// Fix user input
+$usingFallbackConfig = false;
+$configurationOption = $console->getOption('configuration');
+
+if (null !== $configurationOption) {
+	if (!\is_file($configurationOption) || !\is_readable($configurationOption)) {
+		if (!$console->getOption('quiet')) {
+			stderrln('Could not read configuration file: %s', $configurationOption);
+		}
+
+		exit(VENDOR_COMPRESS_ERR_INACCESSIBLE_CONFIGURATION_FILE);
+	}
+} elseif (
+	!\is_file($configurationOption = \getcwd() . DIRECTORY_SEPARATOR . '.vendor_compress') &&
+	!\is_file($configurationOption = \getcwd() . DIRECTORY_SEPARATOR . '.vendor_compress.dist')
+) {
+	$configurationOption = \dirname(__DIR__) . DIRECTORY_SEPARATOR . '.vendor_compress.dist';
+	$usingFallbackConfig = true;
+}
+
+require_once '../vendor/autoload.php';
+
+/**
+ * @var \Donatorsky\VendorCompress\Config $configuration
+ */
+$configuration = require $configurationOption;
+
+if (!$configuration instanceof \Donatorsky\VendorCompress\Config) {
+	if (!$console->getOption('quiet')) {
+		stderrln('The configuration file is invalid: %s', $configurationOption);
+	}
+
+	exit(VENDOR_COMPRESS_ERR_INVALID_CONFIGURATION_FILE);
+}
+
+// Remove vendor.phar if exists and it is allowed
+$vendorPharsToRemove = [];
+
+if (\is_file(VENDOR_COMPRESS_COMPOSER_PHAR)) {
+	$vendorPharsToRemove[] = VENDOR_COMPRESS_COMPOSER_PHAR;
+}
+
+if (\is_file(VENDOR_COMPRESS_COMPOSER_PHAR . '.gz')) {
+	$vendorPharsToRemove[] = VENDOR_COMPRESS_COMPOSER_PHAR . '.gz';
+}
+
+if (\is_file(VENDOR_COMPRESS_COMPOSER_PHAR . '.bz2')) {
+	$vendorPharsToRemove[] = VENDOR_COMPRESS_COMPOSER_PHAR . '.bz2';
+}
+
+if (!empty($vendorPharsToRemove)) {
+	foreach ($vendorPharsToRemove as $item) {
+		stdoutln('The "%s" file already exists.', \basename($item));
+	}
+
+	if (!$console->getOption('override')) {
+		if (!$console->getOption('quiet')) {
+			stdoutln('Existing vendor.phar[.*] were not overridden. Aborting.');
+		}
+
+		exit(VENDOR_COMPRESS_ERR_OK);
+	}
+
+	foreach ($vendorPharsToRemove as $item) {
+		if (!\unlink($item)) {
+			if (!$console->getOption('quiet')) {
+				stderrln('Could not delete %s.', \basename($item));
+			}
+
+			exit(VENDOR_COMPRESS_ERR_COULD_NOT_DELETE_VENDOR_PHAR);
+		}
+
+		stdoutln('The "%s" has been removed.', \basename($item));
+	}
+}
+
+$vendorCompress = new \Donatorsky\VendorCompress\VendorCompress(
+	VENDOR_COMPRESS_COMPOSER_INSTALL,
+	VENDOR_COMPRESS_COMPOSER_PHAR,
+	$configuration
+);
+
+/**
+ * @var \Phar|\PharFileInfo[] $phar
+ */
+try {
+	if (null !== ($memoryLimit = $console->getOption('memory-limit'))) {
+		\ini_set('memory_limit', (string) $memoryLimit);
+	}
+
+	if (!$console->getOption('quiet')) {
+		if ($usingFallbackConfig) {
+			stdoutln('Using default configuration file');
+		} else {
+			stdoutln('Using configuration file: %s', $configurationOption);
+		}
+	}
+
+	if (!$console->getOption('quiet')) {
+		stdout('Generating %s file...', VENDOR_COMPRESS_COMPOSER_PHAR);
+
+		$TStart = \microtime(true);
+	}
+
+	$phar = $vendorCompress->create();
+
+	if (!$console->getOption('quiet')) {
+		stdoutln(
+			' Done! (%d files were packed, time elapsed: %.3f s).',
+			$phar->count(),
+			\microtime(true) - $TStart
+		);
+	}
+
+	if (Phar::NONE !== $configuration->getArchiveCompressionMethod() && !@\unlink(VENDOR_COMPRESS_COMPOSER_PHAR) && !$console->getOption('quiet')) {
+		stdoutln('Note: The generated file "vendor.phar" could not be deleted, you can safely remove it manually.');
+	}
+} catch (Throwable $e) {
+	if (!$console->getOption('quiet')) {
+		stderrln('Could not create phar:');
+		stderrln((string) $e);
+	}
+
+	exit(VENDOR_COMPRESS_ERR_COULD_NOT_CREATE_VENDOR_PHAR);
+}
+
+exit(VENDOR_COMPRESS_ERR_OK);

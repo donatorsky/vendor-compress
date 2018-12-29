@@ -1,0 +1,45 @@
+language: php
+sudo: false
+
+git:
+  depth: 1
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+
+php:
+  - '7.1'
+  - '7.2'
+  - '7.3'
+  - master
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - php: '7.3'
+    - php: master
+
+env:
+  matrix:
+    - DEPENDENCIES="highest"
+    - DEPENDENCIES="lowest"
+  global:
+    - DEFAULT_COMPOSER_FLAGS="--no-interaction --no-ansi --no-progress --no-suggest --no-scripts --optimize-autoloader --classmap-authoritative"
+
+#before_install:
+#  - composer clear-cache
+
+install:
+  - if [[ "$DEPENDENCIES" = 'highest' ]]; then travis_retry composer update $DEFAULT_COMPOSER_FLAGS; fi
+  - if [[ "$DEPENDENCIES" = 'lowest' ]]; then travis_retry composer update $DEFAULT_COMPOSER_FLAGS --prefer-lowest; fi
+
+before_script:
+  - if php --ri xdebug >/dev/null; then phpenv config-rm xdebug.ini; fi
+
+script:
+  - php vendor/bin/php-cs-fixer fix --dry-run --verbose --allow-risky=yes --show-progress=dots --diff-format=udiff
+  - composer analyse
+
+notifications:
+  email: false

@@ -1,9 +1,8 @@
 parameters:
-	autoload_directories:
-		- %rootDir%/../../../src
-
 	autoload_files:
-		- %rootDir%/../../../src/functions.php
+		- %rootDir%/../../../bin/constants.php
+		- %rootDir%/../../../bin/functions.php
+		- %rootDir%/../../../bin/Console.php
 
 	ignoreErrors:
 	    #
