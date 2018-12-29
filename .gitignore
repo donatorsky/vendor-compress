@@ -2,3 +2,4 @@
 /vendor
 /composer.lock
 /vendor.phar
+/.php_cs.cache

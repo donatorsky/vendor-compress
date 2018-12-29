@@ -11,7 +11,31 @@
 	"require": {
 		"php": ">=7.1"
 	},
+	"require-dev": {
+		"friendsofphp/php-cs-fixer": "^2.13",
+		"phpstan/phpstan": "^0.10.7",
+		"roave/security-advisories": "dev-master"
+	},
+	"scripts": {
+		"analyse": [
+			"phpstan analyse --level max --memory-limit=1G src"
+		],
+		"fix": [
+			"php-cs-fixer fix --show-progress=dots --verbose"
+		],
+		"fix-all": [
+			"@fix",
+			"@analyse"
+		]
+	},
 	"bin": [
-		"vendor-compress"
-	]
+		"src/vendor-compress"
+	],
+	"config": {
+		"preferred-install": "dist",
+		"sort-packages": true,
+		"optimize-autoloader": true
+	},
+	"minimum-stability": "dev",
+	"prefer-stable": true
 }
