@@ -5,6 +5,8 @@ declare(strict_types=1);
  * @param resource $handle
  * @param string   $format
  * @param mixed    ...$args
+ *
+ * @see \printf()
  */
 function write($handle, string $format, ...$args): void {
 	\fwrite($handle, \sprintf($format, ...$args));
@@ -14,6 +16,8 @@ function write($handle, string $format, ...$args): void {
  * @param resource $handle
  * @param string   $format
  * @param mixed    ...$args
+ *
+ * @see \printf()
  */
 function writeln($handle, string $format, ...$args): void {
 	\fwrite($handle, \sprintf($format, ...$args));
@@ -23,6 +27,8 @@ function writeln($handle, string $format, ...$args): void {
 /**
  * @param string $format
  * @param mixed  ...$args
+ *
+ * @see \printf()
  */
 function stdout(string $format, ...$args): void {
 	write(STDOUT, $format, ...$args);
@@ -31,6 +37,8 @@ function stdout(string $format, ...$args): void {
 /**
  * @param string $format
  * @param mixed  ...$args
+ *
+ * @see \printf()
  */
 function stdoutln(string $format, ...$args): void {
 	writeln(STDOUT, $format, ...$args);
@@ -44,4 +52,14 @@ function stdoutln(string $format, ...$args): void {
  */
 function stderrln(string $format, ...$args): void {
 	writeln(STDERR, $format, ...$args);
+}
+
+/**
+ * @param mixed $val
+ * @param mixed ...$vals
+ */
+function dd($val, ...$vals): void {
+	\var_dump(...\func_get_args());
+
+	exit;
 }
