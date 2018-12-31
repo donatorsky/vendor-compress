@@ -31,15 +31,16 @@ env:
 #  - composer clear-cache
 
 install:
-  - if [[ "$DEPENDENCIES" = 'highest' ]]; then travis_retry composer update $DEFAULT_COMPOSER_FLAGS; fi
-  - if [[ "$DEPENDENCIES" = 'lowest' ]]; then travis_retry composer update $DEFAULT_COMPOSER_FLAGS --prefer-lowest; fi
+  - if [[ "$DEPENDENCIES" = 'highest' ]]; then composer update $DEFAULT_COMPOSER_FLAGS; fi
+  - if [[ "$DEPENDENCIES" = 'lowest' ]]; then composer update $DEFAULT_COMPOSER_FLAGS --prefer-lowest; fi
 
 before_script:
   - if php --ri xdebug >/dev/null; then phpenv config-rm xdebug.ini; fi
 
 script:
-  - php vendor/bin/php-cs-fixer fix --dry-run --verbose --allow-risky=yes --show-progress=dots --diff-format=udiff
-  - composer analyse
+  - composer cs-check
+  - composer code-analyse
+  - phpunit --bootstrap vendor/autoload.php --configuration phpunit.xml
 
 notifications:
   email: false

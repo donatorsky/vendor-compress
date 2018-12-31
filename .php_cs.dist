@@ -5,6 +5,10 @@ $finder = PhpCsFixer\Finder::create()
 	->in([
 		__DIR__ . DIRECTORY_SEPARATOR . 'bin',
 		__DIR__ . DIRECTORY_SEPARATOR . 'src',
+		__DIR__ . DIRECTORY_SEPARATOR . 'tests',
+	])
+	->exclude([
+		sprintf('%2$s%1$stests%1$sUnit%1$sVendorCompress%1$svendor', DIRECTORY_SEPARATOR, __DIR__),
 	])
 	->name([
 		'vendor-compress',

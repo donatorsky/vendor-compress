@@ -18,8 +18,12 @@
 		"ext-json": "*"
 	},
 	"require-dev": {
-		"friendsofphp/php-cs-fixer": "^2.13.1",
+		"friendsofphp/php-cs-fixer": "^2.14.0",
+		"fzaninotto/faker": "^1.8",
+		"jangregor/phpstan-prophecy": "^0.2.0",
 		"phpstan/phpstan": "^0.10.7",
+		"phpstan/phpstan-phpunit": "^0.10.0",
+		"phpunit/phpunit": "^7.5",
 		"roave/security-advisories": "dev-master",
 		"symfony/finder": "^4.2"
 	},
@@ -30,16 +34,31 @@
 			]
 		}
 	},
+	"autoload-dev": {
+		"psr-4": {
+			"Tests\\": "tests/"
+		}
+	},
 	"scripts": {
-		"analyse": [
+		"code-analyse-sources": [
 			"phpstan analyse --level max --memory-limit=64M bin src"
 		],
-		"fix": [
+		"code-analyse-tests": [
+			"phpstan analyse --configuration=phpstan.tests.neon.dist --level 1 --memory-limit=64M tests"
+		],
+		"code-analyse": [
+			"@code-analyse-sources",
+			"@code-analyse-tests"
+		],
+		"cs-check": [
+			"php-cs-fixer fix --dry-run --show-progress=dots --diff-format=udiff --verbose"
+		],
+		"cs-fix": [
 			"php-cs-fixer fix --show-progress=dots --verbose"
 		],
 		"fix-all": [
-			"@fix",
-			"@analyse"
+			"@cs-fix",
+			"@code-analyse"
 		]
 	},
 	"bin": [

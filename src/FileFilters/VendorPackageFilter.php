@@ -30,11 +30,10 @@ class VendorPackageFilter implements FileFilterInterface {
 	 * @inheritdoc
 	 */
 	public function matches(SplFileInfo $file): bool {
-		return $file->isDir() &&
-			\preg_match(\sprintf(
+		return \preg_match(\sprintf(
 				'/(?(DEFINE)(?\'DS\'[\/\\\\]))vendor(?P>DS)%s%s(?:$|(?P>DS))/i',
 				$this->vendorName,
 				(null !== $this->packageName) ? \sprintf('(?P>DS)%s', $this->packageName) : ''
-			), $file->getPathname());
+			), $file->getPathname()) > 0;
 	}
 }

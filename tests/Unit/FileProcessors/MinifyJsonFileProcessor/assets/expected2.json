@@ -1,0 +1,1 @@
+{"null":null,"string":"string","+int":1265395923,"-int":-1462326014,"+64b int":9223372036854775807,"-64b int":-9223372036854775808,"float":12.0,"small float":12.345,"+float":2.1428492476532196e-10,"-float":-4.783664089846873e-11,"bool":true,"array":[1,2,3,4,5],"object":{"id":123,"username":"admin","password":"123456"}}

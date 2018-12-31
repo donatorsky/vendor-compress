@@ -4,5 +4,8 @@ parameters:
 		- %rootDir%/../../../bin/functions.php
 		- %rootDir%/../../../bin/Console.php
 
+	includes:
+		#
+
 	ignoreErrors:
-	    #
+		#
