@@ -7,6 +7,7 @@ The idea for this project was born recently, when I had to work in a very restri
 
 The package is created as minimal as possible.
 
+[![GitHub license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://github.com/donatorsky/vendor-compress/blob/master/LICENSE)
 [![Build](https://travis-ci.com/donatorsky/vendor-compress.svg?branch=master)](https://travis-ci.com/donatorsky/vendor-compress)
 
 ## What does it do?
@@ -160,6 +161,5 @@ Exit code | Name | Description
 - I think that the most useful would be to generate autoloading with the option `--classmap-authoritative` for production. To make autoloading from a PHAR file work, I rewrite the generated file indexes, so it may not work for dynamic file guessing and searching.
 
 ## Plans for future
-- Currently, `vendor.phar` file is generated out of `vendor/` directory that project is installed in. It might be handy to add `path` option to compress any vendor directory.
-- Maybe it is good idea to use [symfony/console](https://packagist.org/packages/symfony/console) (originally it was used)?
 - Remove unnecessary whitespaces (a.k.a finish `\Donatorsky\VendorCompress\FileProcessors\StripWhitespacesPhpFileProcessor`)
+- Maybe it is good idea to use [symfony/console](https://packagist.org/packages/symfony/console) (originally it was used)?

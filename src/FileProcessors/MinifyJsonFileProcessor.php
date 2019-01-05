@@ -18,9 +18,11 @@ class MinifyJsonFileProcessor implements FileProcessorInterface {
 
 		$encodedJson = \json_encode($decodedJson, JSON_PRESERVE_ZERO_FRACTION);
 
+		// @codeCoverageIgnoreStart
 		if (false === $encodedJson) {
 			return $fileContent;
 		}
+		// @codeCoverageIgnoreEnd
 
 		return $encodedJson;
 	}

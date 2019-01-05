@@ -1,0 +1,56 @@
+<?php
+declare(strict_types=1);
+
+
+$var = 1 + 2 * 3 / 4 % 5 ** 6;
+
+function func ( $param1 , string $param2 , ?int $param3 , $param5 = 5 , array ...$param4) : void {
+ $param1;
+ $param2;
+ $param3;
+ $param4;
+ 
+ {
+ $param5;
+ }
+}
+
+interface Intf {
+ 
+ public function foo ( string $bar = 'baz' ) : string ;
+ 
+}
+
+trait Trt {
+ protected $foo = '';
+ 
+ 
+}
+
+abstract class Acls {
+ 
+ public function __toString(): string {
+ return __CLASS__;
+ }
+}
+
+class Cls
+extends Acls
+implements Intf
+{
+ use Trt;
+ 
+ 
+ 
+ public function foo(string $bar = 'baz'): string {
+ return $this->foo .= $bar;
+ }
+}
+ for ( $x = 1 ; $x <= 5 ; $x += 1) {
+ $x;
+ }
+ 
+$x = 5;
+while ( $x -= 1 ) {
+ $x;
+}

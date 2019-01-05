@@ -88,7 +88,7 @@ if ($console->getOption('help')) {
 }
 
 // Detect vendor path
-$pathArgument = \realpath($console->getArgument('path') ?? __DIR__);
+$pathArgument = \realpath($console->getArgument('path') ?? \dirname(__DIR__));
 
 if (false === $pathArgument) {
 	if (!$console->getOption('quiet')) {
@@ -139,7 +139,7 @@ if (null !== $configurationOption) {
 	$usingFallbackConfig = true;
 }
 
-require_once '../vendor/autoload.php';
+require_once VENDOR_COMPRESS_COMPOSER_INSTALL . 'autoload.php';
 
 /**
  * @var \Donatorsky\VendorCompress\Config $configuration

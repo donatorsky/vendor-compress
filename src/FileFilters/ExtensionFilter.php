@@ -23,7 +23,8 @@ class ExtensionFilter implements FileFilterInterface {
 	 * @inheritdoc
 	 */
 	public function matches(SplFileInfo $file): bool {
-		return \preg_match(\sprintf(
+		return $file->isFile() &&
+			\preg_match(\sprintf(
 				'/\\.%s$/i',
 				\preg_quote($this->extension, '/')
 			), $file->getBasename()) > 0;

@@ -13,16 +13,22 @@ class StripWhitespacesPhpFileProcessor implements FileProcessorInterface {
 		$tokens = \token_get_all($fileContent);
 		$newContent = '';
 
-		for ($x = 0, $xMax = \count($tokens); $x < $xMax; ++$x) {
-			if (\is_string($tokens[$x])) {
-				$newContent .= \trim($tokens[$x]);
+		foreach ($tokens as $token) {
+			if (\is_string($token)) {
+				$newContent .= \trim($token);
 
 				continue;
 			}
 
-			[$id, $text] = $tokens[$x];
+			[$id, $text] = $token;
 
 			switch ($id) {
+				// Skip comments
+				case T_OPEN_TAG:
+					$newContent .= \preg_replace('/[\n\r]+/m', "\n", $text);
+
+				break;
+
 				// Skip comments
 				case T_COMMENT:
 				case T_DOC_COMMENT:

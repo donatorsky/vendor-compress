@@ -1,0 +1,13 @@
+parameters:
+	autoload_files:
+		#
+
+	excludes_analyse:
+		- %rootDir%/../../../tests/Unit/VendorCompress/vendor/*
+
+	includes:
+		- %rootDir%/../../phpstan/phpstan-phpunit/extension.neon
+		- %rootDir%/../../jangregor/phpstan-prophecy/src/extension.neon
+
+	ignoreErrors:
+		#
