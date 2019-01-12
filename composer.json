@@ -15,6 +15,7 @@
 	],
 	"require": {
 		"php": ">=7.1",
+		"ext-Phar": "*",
 		"ext-json": "*"
 	},
 	"require-dev": {

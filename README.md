@@ -159,6 +159,7 @@ Exit code | Name | Description
 ## Tips for use
 - The PHAR file tries to [mount](https://secure.php.net/manual/en/phar.mount.php) directories outside of the `vendor/` directory and is currently only tested for paths directly one level above the `vendor/` directory. If you rely in some way on paths from outside of the root directory of the project, autoload may not work.
 - I think that the most useful would be to generate autoloading with the option `--classmap-authoritative` for production. To make autoloading from a PHAR file work, I rewrite the generated file indexes, so it may not work for dynamic file guessing and searching.
+- Watch out when using whole archive compression. Although it provides better compression ratio, it also comes with additional hack for decompressing files (overrides custom `stub.php` script) which might break autoloading. Files compression is a bit more reliable here.
 
 ## Plans for future
 - Remove unnecessary whitespaces (a.k.a finish `\Donatorsky\VendorCompress\FileProcessors\StripWhitespacesPhpFileProcessor`)

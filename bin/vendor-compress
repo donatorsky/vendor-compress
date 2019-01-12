@@ -117,7 +117,8 @@ if (!\defined('VENDOR_COMPRESS_COMPOSER_INSTALL')) {
 	exit(VENDOR_COMPRESS_ERR_PROJECT_NOT_SET_UP);
 }
 
-\define('VENDOR_COMPRESS_COMPOSER_PHAR', \dirname(VENDOR_COMPRESS_COMPOSER_INSTALL) . DIRECTORY_SEPARATOR . 'vendor.phar');
+\define('VENDOR_COMPRESS_PROJECT_ROOT', \dirname(VENDOR_COMPRESS_COMPOSER_INSTALL) . DIRECTORY_SEPARATOR);
+\define('VENDOR_COMPRESS_COMPOSER_PHAR', VENDOR_COMPRESS_PROJECT_ROOT . 'vendor.phar');
 
 // Fix user input
 $usingFallbackConfig = false;
@@ -132,6 +133,8 @@ if (null !== $configurationOption) {
 		exit(VENDOR_COMPRESS_ERR_INACCESSIBLE_CONFIGURATION_FILE);
 	}
 } elseif (
+	!\is_file($configurationOption = VENDOR_COMPRESS_PROJECT_ROOT . '.vendor_compress') &&
+	!\is_file($configurationOption = VENDOR_COMPRESS_PROJECT_ROOT . '.vendor_compress.dist') &&
 	!\is_file($configurationOption = \getcwd() . DIRECTORY_SEPARATOR . '.vendor_compress') &&
 	!\is_file($configurationOption = \getcwd() . DIRECTORY_SEPARATOR . '.vendor_compress.dist')
 ) {
