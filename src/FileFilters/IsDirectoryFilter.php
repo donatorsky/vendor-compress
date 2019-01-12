@@ -20,7 +20,7 @@ class IsDirectoryFilter implements FileFilterInterface {
 	}
 
 	/**
-	 * @inheritdoc
+	 * {@inheritdoc}
 	 */
 	public function matches(SplFileInfo $file): bool {
 		return $file->isDir() && $this->decorated->matches($file);

@@ -23,7 +23,7 @@ class ConfigTest extends TestCase {
 	private $config;
 
 	/**
-	 * @inheritdoc
+	 * {@inheritdoc}
 	 */
 	protected function setUp(): void {
 		$this->config = new Config();

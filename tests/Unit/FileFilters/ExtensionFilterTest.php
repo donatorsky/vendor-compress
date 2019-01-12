@@ -31,7 +31,7 @@ class ExtensionFilterTest extends TestCase {
 	private $extensionFilter;
 
 	/**
-	 * @inheritdoc
+	 * {@inheritdoc}
 	 */
 	protected function setUp(): void {
 		$this->splFileInfoProphecy = $this->prophesize(SplFileInfo::class);

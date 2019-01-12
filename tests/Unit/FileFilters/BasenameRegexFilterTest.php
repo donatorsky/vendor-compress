@@ -31,7 +31,7 @@ class BasenameRegexFilterTest extends TestCase {
 	private $basenameRegexFilter;
 
 	/**
-	 * @inheritdoc
+	 * {@inheritdoc}
 	 */
 	protected function setUp(): void {
 		$this->splFileInfoProphecy = $this->prophesize(SplFileInfo::class);

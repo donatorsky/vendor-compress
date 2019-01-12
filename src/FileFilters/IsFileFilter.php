@@ -20,7 +20,7 @@ class IsFileFilter implements FileFilterInterface {
 	}
 
 	/**
-	 * @inheritdoc
+	 * {@inheritdoc}
 	 */
 	public function matches(SplFileInfo $file): bool {
 		return $file->isFile() && $this->decorated->matches($file);

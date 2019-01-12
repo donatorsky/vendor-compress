@@ -29,7 +29,7 @@ class VendorCompressTest extends TestCase {
 	private $configMock;
 
 	/**
-	 * @inheritdoc
+	 * {@inheritdoc}
 	 */
 	protected function setUp(): void {
 		$this->configProphecy = $this->prophesize(Config::class);

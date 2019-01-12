@@ -13,7 +13,7 @@ class StripWhitespacesPhpFileProcessorTest extends TestCase {
 	private $stripWhitespacesPhpFileProcessor;
 
 	/**
-	 * @inheritdoc
+	 * {@inheritdoc}
 	 */
 	protected function setUp(): void {
 		$this->stripWhitespacesPhpFileProcessor = new StripWhitespacesPhpFileProcessor();

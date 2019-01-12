@@ -97,7 +97,7 @@ return PhpCsFixer\Config::create()
 			'space' => 'none',
 		],
 		
-		'declare_strict_types' => true,   // Very risky for PHP < 7
+		'declare_strict_types' => true,
 		'dir_constant'         => true,
 		'elseif'               => true,
 		'encoding'             => true,
@@ -146,7 +146,7 @@ return PhpCsFixer\Config::create()
 		'native_function_casing'                 => true,
 		'native_function_invocation'             => true,
 		'new_with_braces'                        => true,
-		//'no_alias_functions'                     => true,
+		'no_alias_functions'                     => true,
 		'no_blank_lines_after_class_opening'     => false,
 		'no_blank_lines_after_phpdoc'            => true,
 		'no_closing_tag'                         => true,
@@ -178,7 +178,7 @@ return PhpCsFixer\Config::create()
 		'no_trailing_whitespace'                      => true,
 		'no_trailing_whitespace_in_comment'           => true,
 		'no_unneeded_control_parentheses'             => true,
-		//'no_unneeded_curly_braces'                    => true,
+		'no_unneeded_curly_braces'                    => true,
 		'no_unneeded_final_method'                    => true,
 		'no_unused_imports'                           => true,
 		'no_useless_else'                             => true,
@@ -235,7 +235,7 @@ return PhpCsFixer\Config::create()
 		],
 		
 		'phpdoc_indent'                  => true,
-		//'phpdoc_inline_tag'              => true,
+		'phpdoc_inline_tag'              => true,
 		'phpdoc_no_empty_return'         => true,
 		'phpdoc_no_useless_inheritdoc'   => true,
 		'phpdoc_order'                   => true,
@@ -243,16 +243,16 @@ return PhpCsFixer\Config::create()
 		'phpdoc_separation'              => true,
 		'phpdoc_single_line_var_spacing' => true,
 		'phpdoc_summary'                 => true,
-		'phpdoc_to_comment'              => false,  // Set to false because it also affects Swagger PhpDocs
+		'phpdoc_to_comment'              => true,
 		'phpdoc_trim'                    => true,
 		'phpdoc_types'                   => true,
 		
 		'phpdoc_types_order' => [
-			'sort_algorithm'  => 'alpha',   // Szkoda, że nie ma tu 'alpha_primitive_first'
+			'sort_algorithm'  => 'alpha',
 			'null_adjustment' => 'always_last',
 		],
 		
-		'phpdoc_var_without_name' => false, // Set to false because it also (sometimes) removes variable name not only in PhpDocs related to class fields
+		'phpdoc_var_without_name' => false,
 		
 		'return_type_declaration' => [
 			'space_before' => 'none',

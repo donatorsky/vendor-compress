@@ -26,7 +26,7 @@ class BasenameFilterTest extends TestCase {
 	private $splFileInfoMock;
 
 	/**
-	 * @inheritdoc
+	 * {@inheritdoc}
 	 */
 	protected function setUp(): void {
 		$this->splFileInfoProphecy = $this->prophesize(SplFileInfo::class);

@@ -16,7 +16,7 @@ class MinifyJsonFileProcessorTest extends TestCase {
 	private $minifyJsonFileProcessor;
 
 	/**
-	 * @inheritdoc
+	 * {@inheritdoc}
 	 */
 	protected function setUp(): void {
 		$this->minifyJsonFileProcessor = new MinifyJsonFileProcessor();

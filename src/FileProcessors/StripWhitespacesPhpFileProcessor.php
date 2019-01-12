@@ -7,7 +7,7 @@ use Donatorsky\VendorCompress\Contracts\FileProcessorInterface;
 
 class StripWhitespacesPhpFileProcessor implements FileProcessorInterface {
 	/**
-	 * @inheritdoc
+	 * {@inheritdoc}
 	 */
 	public function process(string $fileContent): string {
 		$tokens = \token_get_all($fileContent);

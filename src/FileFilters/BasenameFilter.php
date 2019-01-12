@@ -27,7 +27,7 @@ class BasenameFilter implements FileFilterInterface {
 	}
 
 	/**
-	 * @inheritdoc
+	 * {@inheritdoc}
 	 */
 	public function matches(SplFileInfo $file): bool {
 		return \preg_match(\sprintf(

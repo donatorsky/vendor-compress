@@ -20,7 +20,7 @@ class BasenameRegexFilter implements FileFilterInterface {
 	}
 
 	/**
-	 * @inheritdoc
+	 * {@inheritdoc}
 	 */
 	public function matches(SplFileInfo $file): bool {
 		return \preg_match($this->pattern, $file->getBasename()) > 0;

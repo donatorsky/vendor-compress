@@ -201,9 +201,6 @@ $vendorCompress = new \Donatorsky\VendorCompress\VendorCompress(
 	$configuration
 );
 
-/**
- * @var \Phar|\PharFileInfo[] $phar
- */
 try {
 	if (null !== ($memoryLimit = $console->getOption('memory-limit'))) {
 		\ini_set('memory_limit', (string) $memoryLimit);

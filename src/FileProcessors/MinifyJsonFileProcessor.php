@@ -7,7 +7,7 @@ use Donatorsky\VendorCompress\Contracts\FileProcessorInterface;
 
 class MinifyJsonFileProcessor implements FileProcessorInterface {
 	/**
-	 * @inheritdoc
+	 * {@inheritdoc}
 	 */
 	public function process(string $fileContent): string {
 		$decodedJson = \json_decode($fileContent, true);

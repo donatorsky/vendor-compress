@@ -42,7 +42,7 @@ class IsDirectoryFilterTest extends TestCase {
 	private $isDirectoryFilter;
 
 	/**
-	 * @inheritdoc
+	 * {@inheritdoc}
 	 */
 	protected function setUp(): void {
 		$this->splFileInfoProphecy = $this->prophesize(SplFileInfo::class);
